@@ -1,5 +1,6 @@
 ﻿using Shopping.Application.DTOs.ProductImageDTOs.Requests;
 using Shopping.Application.DTOs.ProductImageDTOs.Responses;
+using Shopping.Application.Handlers.Exceptions;
 using Shopping.Application.ServiceInterfaces;
 using Shopping.Domain.Interfaces;
 using Shopping.Domain.Models;
@@ -18,16 +19,20 @@ namespace Shopping.Application.Services
             _fileService = fileService;
             _urlService = urlService;
         }
-
         public async Task CreateAsync(ProductImageCreateDTO dto)
         {
             if (dto.Images == null || dto.Images.Count == 0)
-                throw new ArgumentException("At least one image is required.");
+                throw new ValidationException("At least one image is required.");
 
             if (dto.MainImageIndex < 0 || dto.MainImageIndex >= dto.Images.Count)
-                throw new ArgumentOutOfRangeException(nameof(dto.MainImageIndex),
-                    "Main image index is invalid.");
+                throw new ValidationException("Main image index is invalid.");
 
+            var mainAlreadyExists = await _productImageRepository
+                .AnyAsync(x => x.ProductId == dto.ProductId && x.IsMain);
+            if (mainAlreadyExists)
+                throw new ConflictException("This product already has a main image.");
+
+            var images = new List<ProductImage>();
             for (int i = 0; i < dto.Images.Count; i++)
             {
                 var file = dto.Images[i];
@@ -36,23 +41,26 @@ namespace Shopping.Application.Services
                 await file.CopyToAsync(memoryStream);
                 var bytes = memoryStream.ToArray();
 
-                var extension = Path.GetExtension(file.FileName); // ".jpg"
+                var extension = Path.GetExtension(file.FileName);
                 var savedPath = await _fileService.SaveAsync(bytes, extension);
 
-                var image = new ProductImage
+                images.Add(new ProductImage
                 {
                     FilePath = savedPath,
                     FileName = file.FileName,
                     IsMain = i == dto.MainImageIndex,
                     ProductId = dto.ProductId
-                };
-                await _productImageRepository.AddAsync(image);
+                });
             }
+
+            await _productImageRepository.AddRangeAsync(images);
         }
 
         public async Task DeleteAsync(int id)
         {
-             await _productImageRepository.DeleteAsync(id);
+            var image = await _productImageRepository.GetByIdAsync(id); 
+            await _fileService.DeleteAsync(image.FilePath);            
+            await _productImageRepository.DeleteAsync(id);            
         }
 
         public async Task<IReadOnlyList<ProductImageResponseDTO>> GetAllAsync()

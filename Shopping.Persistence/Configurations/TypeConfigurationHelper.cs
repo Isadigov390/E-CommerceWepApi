@@ -17,6 +17,8 @@ namespace Shopping.Persistence.Configurations
             builder.Property(m => m.LastModifiedBy).HasColumnType("int");
             builder.Property(m => m.DeletedAt).HasColumnType("datetime");
             builder.Property(m => m.DeletedBy).HasColumnType("int");
+
+            builder.HasQueryFilter(m => m.DeletedAt == null);
             return builder;
         }
     }

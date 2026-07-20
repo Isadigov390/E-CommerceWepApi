@@ -17,7 +17,7 @@ namespace Shopping.Persistence.Configurations
                 .HasForeignKey(m => m.ProductId)
                 .OnDelete(DeleteBehavior.Cascade);
             builder.HasIndex(m => new { m.ProductId, m.IsMain })
-                .HasFilter("[IsMain] = 1")
+                .HasFilter("[IsMain] = 1 AND [DeletedAt] IS NULL")
                 .IsUnique();
 
             builder.ToTable("ProductImages");

@@ -12,5 +12,7 @@ namespace Shopping.Domain.Entities.Interfaces
         Task DeleteAsync(int id);
         IQueryable<T> GetAll(Expression<Func<T, bool>> expression);
         Task<T> GetAsync(Expression<Func<T, bool>> expression);
+        Task<bool> AnyAsync(Expression<Func<T, bool>> expression);
+        Task AddRangeAsync(IEnumerable<T> entities);
     }
 }

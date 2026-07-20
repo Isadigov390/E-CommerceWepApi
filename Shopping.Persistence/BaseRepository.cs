@@ -21,7 +21,8 @@ namespace Shopping.Persistence
 
         public async Task DeleteAsync(int id)
         {
-           var entity =  await _appDbContext.Set<T>().FindAsync(id);
+            //work 
+            var entity = await _appDbContext.Set<T>().FirstOrDefaultAsync(m => m.Id == id);
             if (entity == null)
             {
                 throw new KeyNotFoundException($"Entity of type {typeof(T).Name} with id {id} not found.");
@@ -40,7 +41,7 @@ namespace Shopping.Persistence
 
         public async Task<T> GetByIdAsync(int id)
         {
-            var entity =  await _appDbContext.Set<T>().FindAsync(id);
+            var entity = await _appDbContext.Set<T>().FirstOrDefaultAsync(m => m.Id == id);
             if (entity == null)
             {
                 throw new KeyNotFoundException($"Entity of type {typeof(T).Name} with id {id} not found.");
@@ -68,6 +69,17 @@ namespace Shopping.Persistence
         {
             var query = _appDbContext.Set<T>().Where(expression);
             return query;
+        }
+        public async Task<bool> AnyAsync(Expression<Func<T, bool>> expression)
+        {
+            return await _appDbContext.Set<T>().AnyAsync(expression);
+        }
+
+        public async Task AddRangeAsync(IEnumerable<T> entities)
+        {
+             await _appDbContext.Set<T>().AddRangeAsync(entities);
+            await _appDbContext.SaveChangesAsync();
+
         }
     }
 }
