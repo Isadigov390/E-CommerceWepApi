@@ -13,7 +13,7 @@ namespace Shopping.Application.ServiceInterfaces
         Task<ProductResponseDTO> UpdateAsync(int id, ProductRequestDTO productDTO);
         Task<IReadOnlyList<ProductResponseDTO>> GetAllProductsWithImages();
         Task<ProductResponseDTO> GetProductByIdWithImages(int id);
-        Task<IReadOnlyList<ProductResponseDTO>> GetAllProducts();
+        Task<IReadOnlyList<ProductResponseDTO>> GetAllProductsWithPagination();
         Task<ProductResponseDTO> GetAsyncWithImages(int id);
         Task<ProductPagedResponseDTO> GetAllProductsWithPagination(ProductPaginationRequestDTO pagination);
     }

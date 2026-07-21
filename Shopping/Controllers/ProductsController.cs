@@ -51,7 +51,7 @@ namespace Shopping.WebApi.Controllers
         [HttpGet("with-images")]
         public async Task<IActionResult> GetAllProductsWithImages()
         {
-            var products = await _productService.GetAllProducts();
+            var products = await _productService.GetAllProductsWithPagination();
             return Ok(products);
         }
         [HttpGet("{id}/with-images")]

@@ -149,7 +149,7 @@ namespace Shopping.Application.Services
             };
         }
 
-        public async Task<IReadOnlyList<ProductResponseDTO>> GetAllProducts()
+        public async Task<IReadOnlyList<ProductResponseDTO>> GetAllProductsWithPagination()
         {
             var products = await  _productRepository.GetAll(p => p.DeletedAt == null).Include(p => p.ProductImages).ToListAsync();
 

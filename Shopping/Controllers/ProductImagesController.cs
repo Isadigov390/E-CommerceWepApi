@@ -25,7 +25,7 @@ namespace Shopping.WebApi.Controllers
         public async Task<IActionResult> GetAll()
         {
             var images = await _productImageService.GetAllAsync();
-            return Ok(images);
+            return  Ok(images);
         }
 
         [HttpGet("{id}")]
