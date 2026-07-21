@@ -78,7 +78,7 @@ namespace Shopping.Persistence
         public async Task AddRangeAsync(IEnumerable<T> entities)
         {
              await _appDbContext.Set<T>().AddRangeAsync(entities);
-            await _appDbContext.SaveChangesAsync();
+             await _appDbContext.SaveChangesAsync();
 
         }
     }

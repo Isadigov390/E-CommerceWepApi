@@ -50,5 +50,16 @@ namespace Shopping.Infrastructure.Repositories
         {
             throw new NotImplementedException();
         }
+
+        public async Task DeleteWithChildrenAsync(int id)
+        {
+           var productWithImages = await _appDbContext.Set<Product>()
+                .Include(p=>p.ProductImages).Include(p=>p.Reviews)
+                .FirstOrDefaultAsync(p=>p.Id == id);
+            if(productWithImages is null)
+                throw new KeyNotFoundException();
+             _appDbContext.Remove(productWithImages);
+            await _appDbContext.SaveChangesAsync();
+        }
     }
 }

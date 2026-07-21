@@ -39,7 +39,7 @@ namespace Shopping.Application.Services
 
         public Task DeleteAsync(int id)
         {
-            return _productRepository.DeleteAsync(id);
+            return _productRepository.DeleteWithChildrenAsync(id);
         }
 
         public async Task<IReadOnlyList<Product>> GetAll()

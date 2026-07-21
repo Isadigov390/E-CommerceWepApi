@@ -51,7 +51,7 @@ builder.Services.AddExceptionHandler<Shopping.Application.Handlers.GlobalExcepti
 
 var app = builder.Build();
 app.UseStaticFiles();
-app.UseExceptionHandler();
+//    app.UseExceptionHandler();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

@@ -11,5 +11,6 @@ namespace Shopping.Domain.Interfaces
         public Task<IReadOnlyList<Product>> GetAllProductWithImages();
         public Task<Product> GetProductByIdWithImages(int id);
         public Task<Product> GetProductByIdWithImagesExpression(Expression<Func<Product, bool>> expression);
+        public Task DeleteWithChildrenAsync(int id);
     }
 }
