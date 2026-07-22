@@ -14,10 +14,10 @@ namespace Shopping.WebApi.Controllers
         {
             _productImageService = productImageService;
         }
-        [HttpPost]
-        public async Task<IActionResult> CreateAsync([FromForm] ProductImageCreateDTO productImageCreateDTO)
+        [HttpPost("{id}")]
+        public async Task<IActionResult> CreateAsync([FromRoute] int id, [FromForm] ProductImageCreateDTO productImageCreateDTO)
         {
-            await _productImageService.CreateAsync(productImageCreateDTO);
+            await _productImageService.CreateAsync(id, productImageCreateDTO);
             return Ok();
         }
 

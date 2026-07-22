@@ -6,7 +6,7 @@ namespace Shopping.Application.ServiceInterfaces
 {
     public interface IProductImageService
     {
-        public Task CreateAsync(ProductImageCreateDTO productImageCreateDTO);
+        public Task CreateAsync(int id, ProductImageCreateDTO productImageCreateDTO);
         public Task<IReadOnlyList<ProductImageResponseDTO>> GetAllAsync();
         public Task<ProductImageResponseDTO> GetByIdAsync(int id); 
         public Task DeleteAsync(int id);
