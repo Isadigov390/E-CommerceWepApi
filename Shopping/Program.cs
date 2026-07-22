@@ -42,7 +42,7 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddProblemDetails();
-builder.Services.AddScoped<IFileService, FileService>();
+builder.Services.AddScoped<IFileService, BlobFileService>();
 builder.Services.AddScoped<IProductImageRepository, ProductImageRepository>();
 builder.Services.AddScoped<IProductImageService, ProductImageService>();
 builder.Services.AddScoped<IUrlService, UrlService>();
