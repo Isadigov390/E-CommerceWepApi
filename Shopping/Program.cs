@@ -45,13 +45,16 @@ builder.Services.AddProblemDetails();
 builder.Services.AddScoped<IFileService, BlobFileService>();
 builder.Services.AddScoped<IProductImageRepository, ProductImageRepository>();
 builder.Services.AddScoped<IProductImageService, ProductImageService>();
+builder.Services.AddScoped<IProductDetailService, ProductDetailService>();
+builder.Services.AddScoped<IProductDetailRepository, ProductDetailRepository>();
+
 builder.Services.AddScoped<IUrlService, UrlService>();
 
 builder.Services.AddExceptionHandler<Shopping.Application.Handlers.GlobalExceptionHandler>();
 
 var app = builder.Build();
 app.UseStaticFiles();
-//    app.UseExceptionHandler();
+    app.UseExceptionHandler();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

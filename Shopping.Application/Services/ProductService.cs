@@ -1,8 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Shopping.Application.DTOs.ProductDetailDTOs.Responses;
 using Shopping.Application.DTOs.ProductDTOs.Requests;
 using Shopping.Application.DTOs.ProductDTOs.Responses;
 using Shopping.Application.DTOs.ProductImageDTOs.Responses;
+using Shopping.Application.Handlers.Exceptions;
 using Shopping.Application.ServiceInterfaces;
+using Shopping.Domain.Enums;
 using Shopping.Domain.Interfaces;
 using Shopping.Domain.Models;
 
@@ -82,12 +85,11 @@ namespace Shopping.Application.Services
             return product;
         }
 
-        public async Task<ProductResponseDTO> GetProductByIdWithImages(int id)
+        public async Task<ProductWithParentAndChildrenDTO> GetProductByIdWithImages(int id)
         {
-            var product = await _productRepository.GetByIdWithImages(id);
-
+            var product = await _productRepository.GetByIdWithParentsAndChildren(id);
             if (product == null)
-                return null;
+                throw new NotFoundException($"Product with id {id} not found.");
 
             var images = product.ProductImages
                 .Where(i => i.IsMain)
@@ -106,7 +108,8 @@ namespace Shopping.Application.Services
                 })
                 .ToList();
 
-            return new ProductResponseDTO
+
+            return new ProductWithParentAndChildrenDTO
             {
                 Id = product.Id,
                 Title = product.Title,
@@ -115,6 +118,10 @@ namespace Shopping.Application.Services
                 Quantity = product.Quantity,
                 Brand = product.Brand,
                 CategoryId = product.CategoryId,
+                CategoryName = product.Category.Name,
+                SKU = product.ProductDetail?.SKU ?? string.Empty,
+                Discount = product.ProductDetail?.Discount ?? 0,
+                Warranty = product.ProductDetail?.Warranty ?? WarrantyType.NoWarranty,
                 CreatedAt = product.CreatedAt,
                 LastModifiedAt = product.LastModifiedAt,
                 Images = images
@@ -212,13 +219,14 @@ namespace Shopping.Application.Services
             var query = _productRepository.GetAll(p=>p.DeletedAt == null);
             var total = query.Count();
 
-            var products = await query.OrderBy(p=>p.CreatedAt).Skip(pagination.Skip).Take(pagination.Limit).Include(p=>p.ProductImages).ToListAsync();
+            var products = await query.OrderBy(p=>p.CreatedAt).Skip(pagination.Skip).Take(pagination.Limit).Include(p=>p.ProductImages).Include(p=>p.Category)
+                .ToListAsync();
             return new ProductPagedResponseDTO
             {
                 Total = total,
                 Skip = pagination.Skip,
                 Limit = pagination.Limit,
-                Products = products.Select(p => new ProductResponseDTO
+                Products = products.Select(p => new ProductWithCategoryResponseDTO
                 {
                     Id = p.Id,
                     Title = p.Title,
@@ -226,6 +234,7 @@ namespace Shopping.Application.Services
                     Description = p.Description,
                     Quantity = p.Quantity,
                     Brand = p.Brand,
+                    CategoryName= p.Category.Name,
                     CategoryId = p.CategoryId,
                     CreatedAt = p.CreatedAt,
                     LastModifiedAt = p.LastModifiedAt,

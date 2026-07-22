@@ -25,9 +25,10 @@ namespace Shopping.Infrastructure.Repositories
            return await _appDbContext.Set<Product>().Include(m=>m.ProductImages.Where(i=>i.IsMain)).ToListAsync();
         }
 
-        public async Task<Product?> GetByIdWithImages(int id)
+        public async Task<Product?> GetByIdWithParentsAndChildren(int id)
         {
-            var product =  await _appDbContext.Set<Product>().Include(m=>m.ProductImages).FirstOrDefaultAsync(p=>p.Id == id); 
+            var product =  await _appDbContext.Set<Product>().Include(m=>m.ProductImages).Include(m=>m.ProductDetail).Include(m=>m.Category)
+                .FirstOrDefaultAsync(p=>p.Id == id); 
             if (product == null)
             {
                  throw new KeyNotFoundException();

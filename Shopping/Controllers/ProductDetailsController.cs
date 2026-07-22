@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Shopping.Application.DTOs.ProductDetailDTOs;
+using Shopping.Application.DTOs.ProductDetailDTOs.Requests;
+using Shopping.Application.ServiceInterfaces;
 
 namespace Shopping.WebApi.Controllers
 {
@@ -7,10 +8,30 @@ namespace Shopping.WebApi.Controllers
     [ApiController]
     public class ProductDetailsController : ControllerBase
     {
-        [HttpPost]
-        public IActionResult Create(ProductDetailRequestDTO productDetailRequestDTO)
+        private readonly IProductDetailService _productDetailService;
+        public ProductDetailsController(IProductDetailService productDetailService)
         {
-            return NoContent();
+            _productDetailService = productDetailService;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody]ProductDetailRequestDTO productDetailRequestDTO)
+        {
+            var pDetail = await _productDetailService.CreateAsync(productDetailRequestDTO);
+            return Ok(pDetail);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            var pDetail = await _productDetailService.GetById(id);
+            return Ok(pDetail);
+        }
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var pDetails = await _productDetailService.GetAllAsync();
+            return Ok(pDetails);
         }
     }
 }
