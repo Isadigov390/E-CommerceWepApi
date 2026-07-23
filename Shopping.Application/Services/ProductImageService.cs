@@ -19,7 +19,7 @@ namespace Shopping.Application.Services
             _fileService = fileService;
             _urlService = urlService;
         }
-        public async Task CreateAsync(int id, ProductImageCreateDTO dto)
+        public async Task CreateAsync(int id, ProductImagesCreateDTO dto)
         {
             if (dto.Images == null || dto.Images.Count == 0)
                 throw new ValidationException("At least one image is required.");
@@ -29,20 +29,20 @@ namespace Shopping.Application.Services
 
             var mainAlreadyExists = await _productImageRepository
                 .AnyAsync(x => x.ProductId == id && x.IsMain);
-            if (mainAlreadyExists)
+            if (mainAlreadyExists)  
                 throw new ConflictException("This product already has a main image.");
 
             var images = new List<ProductImage>();
             for (int i = 0; i < dto.Images.Count; i++)
             {
-                var file = dto.Images[i];
+                var file = dto.Images[i]; // takes first image file, then next next
 
-                using var memoryStream = new MemoryStream();
-                await file.CopyToAsync(memoryStream);
-                var bytes = memoryStream.ToArray();
+                using var memoryStream = new MemoryStream();// instance of memory stream, but why? why not others like IFile(smthing else?)
+                await file.CopyToAsync(memoryStream); //what does it do? saving copy of file to memory? 
+                var bytes = memoryStream.ToArray(); // converts that image file which is in memory to bytes? why to bytes? 
 
-                var extension = Path.GetExtension(file.FileName);
-                var savedPath = await _fileService.SaveAsync(bytes, extension);
+                var extension = Path.GetExtension(file.FileName); // what this extension gives us? what file.FileName is like? car.png? 
+                var savedPath = await _fileService.SaveAsync(bytes, extension); // here we use file service which has a method that accepts bytes and extension(is this .png?)
 
                 images.Add(new ProductImage
                 {
@@ -50,10 +50,37 @@ namespace Shopping.Application.Services
                     FileName = file.FileName,
                     IsMain = i == dto.MainImageIndex,
                     ProductId = id
-                });
+                }); //here we add to our created list and then send that list to db via repository method
             }
 
             await _productImageRepository.AddRangeAsync(images);
+        }
+
+        public async Task<ProductImageCreateResponseDTO> CreateOneAsync(ProductImageCreateDTO productImageCreateDTO)
+        {
+            var file = productImageCreateDTO.Image;
+            if (file.Length == 0)
+                throw new ValidationException("File is empty.");
+
+            if (file.Length > 5 * 1024 * 1024)
+                throw new ValidationException("File exceeds 5 MB.");
+
+            using var memoryStream = new MemoryStream();
+            await file.CopyToAsync(memoryStream);
+            var bytes = memoryStream.ToArray();
+            var extension = Path.GetExtension(file.FileName);
+            var savedPath = await _fileService.SaveAsync(bytes, extension);
+
+            ProductImage productImage = new ProductImage()
+            {
+                FileName = productImageCreateDTO.Image.FileName,
+                FilePath = savedPath,
+                IsMain = false,
+            };
+            await _productImageRepository.AddAsync(productImage);
+
+            return new ProductImageCreateResponseDTO {Id = productImage.Id };
+
         }
 
         public async Task DeleteAsync(int id)
@@ -92,7 +119,7 @@ namespace Shopping.Application.Services
         public async Task<ProductImage> UpdateAsync(int id, ProductImageUpdateRequestDTO productImageUpdateRequest)
         {
             var productImage = await _productImageRepository.GetByIdAsync(id);
-            ProductImageCreateDTO productImageCreateDTO = new ProductImageCreateDTO();
+            ProductImagesCreateDTO productImageCreateDTO = new ProductImagesCreateDTO();
             productImageCreateDTO.MainImageIndex = productImageUpdateRequest.MainImageIndex;
             id = productImageUpdateRequest.ProductId;
 

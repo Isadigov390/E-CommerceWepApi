@@ -13,9 +13,11 @@ namespace Shopping.Persistence.Configurations
             builder.Property(m => m.FileName).HasColumnType("nvarchar").HasMaxLength(200).IsRequired();
             builder.Property(m => m.IsMain).HasColumnType("bit").IsRequired();
             builder.HasOne(m => m.Product)
-                .WithMany(p => p.ProductImages)
-                .HasForeignKey(m => m.ProductId)
-                .OnDelete(DeleteBehavior.Cascade);
+               .WithMany(p => p.ProductImages)
+               .HasForeignKey(m => m.ProductId)
+               .IsRequired(false)
+               .OnDelete(DeleteBehavior.Cascade);
+
             builder.HasIndex(m => new { m.ProductId, m.IsMain })
                 .HasFilter("[IsMain] = 1 AND [DeletedAt] IS NULL")
                 .IsUnique();
