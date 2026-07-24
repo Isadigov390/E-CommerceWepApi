@@ -27,5 +27,45 @@ namespace Shopping.Infrastructure.Repositories
             mainImage.IsMain = true;
             await _appDbContext.SaveChangesAsync();
         }
+
+        public async Task SyncProductImagesAsync(int productId, List<int> desiredIds, int coverImageId)
+        {
+            var strategy = _appDbContext.Database.CreateExecutionStrategy();
+
+            await strategy.ExecuteAsync(async () =>
+            {
+                using var tx = await _appDbContext.Database.BeginTransactionAsync();
+
+                var current = await _appDbContext.Set<ProductImage>()
+                    .Where(x => x.ProductId == productId && x.DeletedAt == null)
+                    .ToListAsync();
+
+                var desired = await _appDbContext.Set<ProductImage>()
+                    .Where(x => desiredIds.Contains(x.Id) && x.DeletedAt == null)
+                    .ToListAsync();
+
+                if (desired.Count != desiredIds.Count)
+                    throw new KeyNotFoundException("One or more image ids were not found.");
+
+                // PHASE 1: clear mains + soft-delete removed
+                foreach (var img in current)
+                {
+                    img.IsMain = false;
+                    if (!desiredIds.Contains(img.Id))
+                        _appDbContext.Set<ProductImage>().Remove(img);
+                }
+                await _appDbContext.SaveChangesAsync();
+
+                // PHASE 2: attach + set single cover
+                foreach (var img in desired)
+                {
+                    img.ProductId = productId;
+                    img.IsMain = (img.Id == coverImageId);
+                }
+                await _appDbContext.SaveChangesAsync();
+
+                await tx.CommitAsync();
+            });
+        }
     }
 }

@@ -310,5 +310,25 @@ namespace Shopping.Application.Services
                 Images = images
             };
         }
+        public async Task UpdateProductWithImages(int productId, ProductWithImageIdsRequestDTO dto)
+        {
+            // 1. product fields
+            var product = await _productRepository.GetByIdAsync(productId);
+            product.Title = dto.Title;
+            product.Price = dto.Price;
+            product.Description = dto.Description;
+            product.Quantity = dto.Quantity;
+            product.Brand = dto.Brand;
+            product.CategoryId = dto.CategoryId;
+
+            // 2. business rule: cover must be one of the product's images
+            if (!dto.ImageIds.Contains(dto.CoverImageId))
+                throw new ValidationException("Cover image must be one of the product's images.");
+
+            // 3. reconcile images + set cover
+            await _productImageRepository.SyncProductImagesAsync(productId, dto.ImageIds, dto.CoverImageId);
+
+            await _productRepository.UpdateAsync(product);
+        }
     }
 }

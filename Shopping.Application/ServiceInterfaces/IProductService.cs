@@ -18,5 +18,7 @@ namespace Shopping.Application.ServiceInterfaces
         Task<IReadOnlyList<ProductResponseDTO>> GetAllProductsWithPagination();
         Task<ProductResponseDTO> GetAsyncWithImages(int id);
         Task<ProductPagedResponseDTO> GetAllProductsWithPagination(ProductPaginationRequestDTO pagination);
+        Task UpdateProductWithImages(int productId, ProductWithImageIdsRequestDTO dto);
+
     }
 }
