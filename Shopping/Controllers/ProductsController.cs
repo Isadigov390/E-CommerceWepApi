@@ -60,6 +60,12 @@ namespace Shopping.WebApi.Controllers
             var product = await _productService.GetProductByIdWithImages(id);
             return Ok(product);
         }
+        [HttpGet("{id}/with-all-images")]
+        public async Task<IActionResult> GetProductsByIdWithAllImages([FromRoute] int id)
+        {
+            var product = await _productService.GetProductByIdWithAllImages(id);
+            return Ok(product);
+        }
         [HttpGet("with-images/{skip:int}/{limit:int}")]
         public async Task<IActionResult> GetProductsPaged([FromRoute] int skip, [FromRoute] int limit)
         {

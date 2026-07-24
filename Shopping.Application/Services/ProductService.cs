@@ -97,7 +97,7 @@ namespace Shopping.Application.Services
                 .Take(1)
                 .Concat(product.ProductImages
                     .Where(i => !i.IsMain)
-                    .OrderBy(i => i.CreatedAt)
+                    .OrderByDescending(i => i.CreatedAt)
                     .Take(3))
                 .Select(i => new ProductImageResponseDTO
                 {
@@ -266,6 +266,49 @@ namespace Shopping.Application.Services
             
             await  _productImageRepository.AttachToProductAsync(createdProduct.Id, productWithImageIdsRequestDTO.ImageIds, productWithImageIdsRequestDTO.CoverImageId);
 
+        }
+
+        public async Task<ProductWithParentAndChildrenDTO> GetProductByIdWithAllImages(int id)
+        {
+            var product = await _productRepository.GetByIdWithParentsAndChildren(id);
+            if (product == null)
+                throw new NotFoundException($"Product with id {id} not found.");
+
+            var images = product.ProductImages
+                .Where(i => i.IsMain)
+                .Take(1)
+                .Concat(product.ProductImages
+                    .Where(i => !i.IsMain)
+                    .OrderByDescending(i => i.CreatedAt)
+                    .Take(9))
+                .Select(i => new ProductImageResponseDTO
+                {
+                    Id = i.Id,
+                    FileName = i.FileName,
+                    Url = _urlService.BuildUrl(i.FilePath),
+                    IsMain = i.IsMain,
+                    ProductId = i.ProductId
+                })
+                .ToList();
+
+
+            return new ProductWithParentAndChildrenDTO
+            {
+                Id = product.Id,
+                Title = product.Title,
+                Price = product.Price,
+                Description = product.Description,
+                Quantity = product.Quantity,
+                Brand = product.Brand,
+                CategoryId = product.CategoryId,
+                CategoryName = product.Category.Name,
+                SKU = product.ProductDetail?.SKU ?? string.Empty,
+                Discount = product.ProductDetail?.Discount ?? 0,
+                Warranty = product.ProductDetail?.Warranty ?? WarrantyType.NoWarranty,
+                CreatedAt = product.CreatedAt,
+                LastModifiedAt = product.LastModifiedAt,
+                Images = images
+            };
         }
     }
 }

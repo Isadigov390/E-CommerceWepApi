@@ -19,7 +19,7 @@ namespace Shopping.Application.Services
             _fileService = fileService;
             _urlService = urlService;
         }
-        public async Task CreateAsync(int id, ProductImagesCreateDTO dto)
+        public async Task CreateByProductIdAsync(int id, ProductImagesCreateDTO dto)
         {
             if (dto.Images == null || dto.Images.Count == 0)
                 throw new ValidationException("At least one image is required.");
@@ -54,6 +54,32 @@ namespace Shopping.Application.Services
             }
 
             await _productImageRepository.AddRangeAsync(images);
+        }
+
+        public async Task<List<int>> CreateMany(ProductImagesCreateManyDTO productImagesCreateManyDTO)
+        {
+            var requestImages = productImagesCreateManyDTO.Images;
+            var images = new List<ProductImage>();
+
+            foreach (var image in requestImages)
+            {
+                using var memoryStream = new MemoryStream();
+                await image.CopyToAsync(memoryStream);
+                var bytes = memoryStream.ToArray();
+
+                var extension = Path.GetExtension(image.FileName);
+                var savedPath = await _fileService.SaveAsync(bytes, extension);
+
+                images.Add(new ProductImage
+                {
+                    FileName = image.FileName,
+                    FilePath = savedPath
+                });
+            }
+
+            await _productImageRepository.AddRangeAsync(images);   // SaveChanges fills each Id
+
+            return images.Select(i => i.Id).ToList();              // read ids after save
         }
 
         public async Task<ProductImageCreateResponseDTO> CreateOneAsync(ProductImageCreateDTO productImageCreateDTO)
@@ -128,7 +154,7 @@ namespace Shopping.Application.Services
                 await _productImageRepository.DeleteAsync(productImageUpdateRequest.DeletedImagesId[i]);
                 productImageCreateDTO.Images.Add(productImageUpdateRequest.NewImages[i]);
             }
-            await CreateAsync(id, productImageCreateDTO);
+            await CreateByProductIdAsync(id, productImageCreateDTO);
             //_productImageRepository.UpdateAsync()
 
 

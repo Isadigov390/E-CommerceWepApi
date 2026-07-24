@@ -1,7 +1,5 @@
-﻿using Shopping.Application.DTOs.ProductDetailDTOs.Responses;
-using Shopping.Application.DTOs.ProductImageDTOs.Responses;
+﻿using Shopping.Application.DTOs.ProductImageDTOs.Responses;
 using Shopping.Domain.Enums;
-using Shopping.Domain.Models;
 
 namespace Shopping.Application.DTOs.ProductDTOs.Responses
 {

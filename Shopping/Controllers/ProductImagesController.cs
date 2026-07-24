@@ -17,7 +17,7 @@ namespace Shopping.WebApi.Controllers
         [HttpPost("{id}")]
         public async Task<IActionResult> CreateAsync([FromRoute] int id, [FromForm] ProductImagesCreateDTO productImageCreateDTO)
         {
-            await _productImageService.CreateAsync(id, productImageCreateDTO);
+            await _productImageService.CreateByProductIdAsync(id, productImageCreateDTO);
             return Ok();
         }
 
