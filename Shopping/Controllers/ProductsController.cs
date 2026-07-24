@@ -71,5 +71,12 @@ namespace Shopping.WebApi.Controllers
             var products = await _productService.GetAllProductsWithPagination(pagination);
             return Ok(products);
         }
+
+        [HttpPost("with-images")]
+        public async Task<IActionResult> CreateProductWithImageIds(ProductWithImageIdsRequestDTO request)
+        {
+            await _productService.CreateProductWithImages(request);
+            return Ok();
+        }
     }
 }

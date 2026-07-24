@@ -5,5 +5,6 @@ namespace Shopping.Domain.Interfaces
 {
     public interface IProductImageRepository : IBaseRepository<ProductImage>
     {
+        Task AttachToProductAsync(int productId, List<int> imageIds, int coverImageId);
     }
 }

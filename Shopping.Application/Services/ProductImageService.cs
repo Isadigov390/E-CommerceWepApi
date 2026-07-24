@@ -59,7 +59,7 @@ namespace Shopping.Application.Services
         public async Task<ProductImageCreateResponseDTO> CreateOneAsync(ProductImageCreateDTO productImageCreateDTO)
         {
             var file = productImageCreateDTO.Image;
-            if (file.Length == 0)
+            if (file.Length == 0 || file is null)
                 throw new ValidationException("File is empty.");
 
             if (file.Length > 5 * 1024 * 1024)

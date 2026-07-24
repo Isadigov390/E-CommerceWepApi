@@ -16,11 +16,14 @@ namespace Shopping.Application.Services
         private readonly IProductRepository _productRepository;
         private readonly ICategoryRepository _categoryRepository;
         private readonly IUrlService _urlService;
-        public ProductService(IProductRepository productRepository, ICategoryRepository categoryRepository , IUrlService urlService)
+        private readonly IProductImageRepository _productImageRepository;
+        public ProductService(IProductRepository productRepository, ICategoryRepository categoryRepository , 
+            IUrlService urlService, IProductImageRepository productImageRepository)
         {
             _productRepository = productRepository;
             _categoryRepository = categoryRepository;
             _urlService = urlService;
+            _productImageRepository = productImageRepository;
         }
         public async Task<Product> CreateAsync(ProductRequestDTO productDTO)
         {
@@ -49,8 +52,6 @@ namespace Shopping.Application.Services
         {
             return await _productRepository.GetAllAsync();
         }
-
-
 
         public async Task<IReadOnlyList<ProductResponseDTO>> GetAllProductsWithImages()
         {
@@ -219,7 +220,7 @@ namespace Shopping.Application.Services
             var query = _productRepository.GetAll(p=>p.DeletedAt == null);
             var total = query.Count();
 
-            var products = await query.OrderBy(p=>p.CreatedAt).Skip(pagination.Skip).Take(pagination.Limit).Include(p=>p.ProductImages).Include(p=>p.Category)
+            var products = await query.OrderByDescending(p=>p.CreatedAt).Skip(pagination.Skip).Take(pagination.Limit).Include(p=>p.ProductImages).Include(p=>p.Category)
                 .ToListAsync();
             return new ProductPagedResponseDTO
             {
@@ -249,6 +250,22 @@ namespace Shopping.Application.Services
                         }).ToList()
                 }).ToList()
             };
+        }
+
+        public async Task CreateProductWithImages(ProductWithImageIdsRequestDTO productWithImageIdsRequestDTO)
+        {
+            var createdProduct = await CreateAsync(new ProductRequestDTO
+            {
+                Title = productWithImageIdsRequestDTO.Title,
+                Description = productWithImageIdsRequestDTO.Description,
+                Brand = productWithImageIdsRequestDTO.Brand,
+                CategoryId = productWithImageIdsRequestDTO.CategoryId,
+                Price = productWithImageIdsRequestDTO.Price,
+                Quantity = productWithImageIdsRequestDTO.Quantity,
+            });
+            
+            await  _productImageRepository.AttachToProductAsync(createdProduct.Id, productWithImageIdsRequestDTO.ImageIds, productWithImageIdsRequestDTO.CoverImageId);
+
         }
     }
 }

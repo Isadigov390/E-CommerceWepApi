@@ -35,7 +35,8 @@ namespace Shopping.Persistence
 
         public async Task<IReadOnlyList<T>> GetAllAsync()
         {
-            return await _appDbContext.Set<T>().ToListAsync();
+            return await _appDbContext.Set<T>().
+                ToListAsync();
         }
 
 
