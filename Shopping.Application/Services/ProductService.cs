@@ -11,6 +11,7 @@ using Shopping.Domain.Models;
 
 namespace Shopping.Application.Services
 {
+
     public class ProductService : IProductService
     {
         private readonly IProductRepository _productRepository;
@@ -157,31 +158,83 @@ namespace Shopping.Application.Services
             };
         }
 
-        public async Task<IReadOnlyList<ProductResponseDTO>> GetAllProductsWithPagination()
+        public async Task<ProductPagedResponseDTO> GetAllProductsWithPagination(
+            ProductPaginationRequestDTO pagination)
         {
-            var products = await  _productRepository.GetAll(p => p.DeletedAt == null).Include(p => p.ProductImages).ToListAsync();
+            // 1. BASE
+            IQueryable<Product> query = _productRepository.GetAll(p => p.DeletedAt == null);
 
-            return  products.Select(p => new ProductResponseDTO
+            // 2. SEARCH - only if the caller actually sent something
+            if (!string.IsNullOrWhiteSpace(pagination.Search))
             {
-                Id = p.Id,
-                Title = p.Title,
-                Price = p.Price,
-                Description = p.Description,
-                Quantity = p.Quantity,
-                Brand = p.Brand,
-                CategoryId = p.CategoryId,
-                CreatedAt = p.CreatedAt,
-                LastModifiedAt = p.LastModifiedAt,
-                Images = p.ProductImages.Where(i=>i.IsMain ==true)
-                .Select(i => new ProductImageResponseDTO
+                var term = pagination.Search.Trim();
+                query = query.Where(p => p.Title.Contains(term));
+            }
+
+            // 3. TOTAL - after search, before paging
+            var total = await query.CountAsync();
+
+            // 4. SORT
+            query = pagination.SortBy switch
+            {
+                ProductSortBy.PriceAsc =>
+                    query.OrderBy(p => p.Price).ThenBy(p => p.Id),
+
+                ProductSortBy.PriceDesc =>
+                    query.OrderByDescending(p => p.Price).ThenBy(p => p.Id),
+
+                ProductSortBy.TitleAsc =>
+                    query.OrderBy(p => p.Title).ThenBy(p => p.Id),
+
+                ProductSortBy.TitleDesc =>
+                    query.OrderByDescending(p => p.Title).ThenBy(p => p.Id),
+
+                ProductSortBy.RatingDesc =>
+                    query.OrderByDescending(p => p.Reviews
+                            .Where(r => r.DeletedAt == null)
+                            .Average(r => (double?)r.Stars) ?? 0)
+                         .ThenBy(p => p.Id),
+
+                _ => query.OrderByDescending(p => p.CreatedAt).ThenBy(p => p.Id)
+            };
+
+            // 5. PAGE + load related data
+            var products = await query
+                .Skip(pagination.Skip)
+                .Take(pagination.Limit)
+                .Include(p => p.ProductImages.Where(i => i.IsMain && i.DeletedAt == null))
+                .Include(p => p.Category)
+                .ToListAsync();
+
+            // 6. PROJECT in memory (BuildUrl can't translate to SQL)
+            return new ProductPagedResponseDTO
+            {
+                Total = total,
+                Skip = pagination.Skip,
+                Limit = pagination.Limit,
+                Products = products.Select(p => new ProductWithCategoryResponseDTO
                 {
-                    Id = i.Id,
-                    FileName = i.FileName,
-                    Url = _urlService.BuildUrl(i.FilePath),
-                    IsMain = i.IsMain,
-                    ProductId = i.ProductId,
+                    Id = p.Id,
+                    Title = p.Title,
+                    Price = p.Price,
+                    Description = p.Description,
+                    Quantity = p.Quantity,
+                    Brand = p.Brand,
+                    CategoryName = p.Category.Name,
+                    CategoryId = p.CategoryId,
+                    CreatedAt = p.CreatedAt,
+                    LastModifiedAt = p.LastModifiedAt,
+                    Images = p.ProductImages
+                        .Select(i => new ProductImageResponseDTO
+                        {
+                            Id = i.Id,
+                            FileName = i.FileName,
+                            Url = _urlService.BuildUrl(i.FilePath),
+                            IsMain = i.IsMain,
+                            ProductId = i.ProductId,
+                        }).ToList()
                 }).ToList()
-            }).ToList();
+            };
         }
 
         public async Task<ProductResponseDTO> GetAsyncWithImages(int id)
@@ -215,7 +268,7 @@ namespace Shopping.Application.Services
             return respone;
         }
 
-        public async Task<ProductPagedResponseDTO> GetAllProductsWithPagination(ProductPaginationRequestDTO pagination)
+        public async Task<ProductPagedResponseDTO> GetAllProductsWithPagination2(ProductPaginationRequestDTO pagination)
         {
             var query = _productRepository.GetAll(p=>p.DeletedAt == null);
             var total = query.Count();
@@ -331,6 +384,11 @@ namespace Shopping.Application.Services
             await _productImageRepository.SyncProductImagesAsync(productId, dto.ImageIds, dto.CoverImageId);
 
             await _productRepository.UpdateAsync(product);
+        }
+
+        public Task<IReadOnlyList<ProductResponseDTO>> GetAllProductsWithPagination()
+        {
+            throw new NotImplementedException();
         }
     }
 }

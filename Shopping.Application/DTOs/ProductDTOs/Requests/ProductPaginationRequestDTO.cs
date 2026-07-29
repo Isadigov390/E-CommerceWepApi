@@ -1,9 +1,13 @@
-﻿namespace Shopping.Application.DTOs.ProductDTOs.Requests
+﻿using Shopping.Domain.Enums;
+
+namespace Shopping.Application.DTOs.ProductDTOs.Requests
 {
     public class ProductPaginationRequestDTO
     {
         public int Limit { get; set; } = 10;
         public int Skip { get; set; } = 0;
+        public string? Search { get; set; }
+        public ProductSortBy SortBy { get; set; } = ProductSortBy.Newest;
 
     }
 }

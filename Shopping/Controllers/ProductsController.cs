@@ -48,12 +48,12 @@ namespace Shopping.WebApi.Controllers
             await _productService.DeleteAsync(id);
             return NoContent();
         }
-        [HttpGet("with-images")]
-        public async Task<IActionResult> GetAllProductsWithImages()
-        {
-            var products = await _productService.GetAllProductsWithPagination();
-            return Ok(products);
-        }
+        //[HttpGet("with-images")]
+        //public async Task<IActionResult> GetAllProductsWithImages()
+        //{
+        //    var products = await _productService.GetAllProductsWithPagination();
+        //    return Ok(products);
+        //}
         [HttpGet("{id}/with-images")]
         public async Task<IActionResult> GetProductsByIdWithImages([FromRoute] int id)
         {
@@ -66,14 +66,9 @@ namespace Shopping.WebApi.Controllers
             var product = await _productService.GetProductByIdWithAllImages(id);
             return Ok(product);
         }
-        [HttpGet("with-images/{skip:int}/{limit:int}")]
-        public async Task<IActionResult> GetProductsPaged([FromRoute] int skip, [FromRoute] int limit)
+        [HttpGet("with-images")]
+        public async Task<IActionResult> GetProductsPaged([FromQuery] ProductPaginationRequestDTO pagination)
         {
-            var pagination = new ProductPaginationRequestDTO
-            {
-                Skip = skip,
-                Limit = limit
-            };
             var products = await _productService.GetAllProductsWithPagination(pagination);
             return Ok(products);
         }
