@@ -294,6 +294,7 @@ namespace Shopping.Application.Services
 
             return new ProductWithParentAndChildrenDTO
             {
+                IsAvailable = product.Quantity > 0,
                 Id = product.Id,
                 Title = product.Title,
                 Price = product.Price,
@@ -308,6 +309,7 @@ namespace Shopping.Application.Services
                 CreatedAt = product.CreatedAt,
                 LastModifiedAt = product.LastModifiedAt,
                 Images = images
+               
             };
         }
         public async Task UpdateProductWithImages(int productId, ProductWithImageIdsRequestDTO dto)

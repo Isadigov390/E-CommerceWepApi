@@ -86,9 +86,9 @@ namespace Shopping.WebApi.Controllers
         }
 
         [HttpPut("{id}/with-images")]
-        public async Task<IActionResult> UpdateProductWithImages([FromRoute] int id, ProductWithImageIdsRequestDTO request)
+        public async Task<IActionResult> UpdateProductWithImages([FromRoute] int productId, ProductWithImageIdsRequestDTO request)
         {
-            await _productService.UpdateProductWithImages(id, request);
+            await _productService.UpdateProductWithImages(productId, request);
             return NoContent();
         }
     }
