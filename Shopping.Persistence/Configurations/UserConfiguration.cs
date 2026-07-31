@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Shopping.Domain.Models;
+using Shopping.Domain.Entities.Accounts;
 
 namespace Shopping.Persistence.Configurations
 {
@@ -10,27 +10,17 @@ namespace Shopping.Persistence.Configurations
         {
             builder.ConfigureBaseEntity();
 
-            builder.Property(m => m.Email).HasColumnType("nvarchar").HasMaxLength(200).IsRequired();
-            builder.Property(m => m.Username).HasColumnType("nvarchar").HasMaxLength(100).IsRequired();
-            builder.Property(m => m.Password).HasColumnType("nvarchar").HasMaxLength(300).IsRequired();
-            builder.Property(m => m.ProfileImagePath).HasColumnType("nvarchar").HasMaxLength(300);
+            builder.Property(m => m.Name).HasColumnType("nvarchar").HasMaxLength(100).IsRequired();
+            builder.Property(m => m.Surname).HasColumnType("nvarchar").HasMaxLength(100).IsRequired();
+            builder.Property(m => m.Email).HasColumnType("nvarchar").HasMaxLength(256).IsRequired();
+            builder.Property(m => m.PasswordHash).HasColumnType("nvarchar").HasMaxLength(255).IsRequired();
+            builder.Property(m => m.EmailConfirmed).HasColumnType("bit").IsRequired().HasDefaultValue(false);
 
-            builder.HasOne(m => m.Person)
-                .WithOne(p => p.User)
-                .HasForeignKey<User>(m => m.PersonId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            builder.HasIndex(m => m.PersonId).IsUnique();
-            builder.HasIndex(m => m.Email).IsUnique();
-            builder.HasIndex(m => m.Username).IsUnique();
+            builder.HasIndex(m => m.Email)
+                .HasFilter("[DeletedAt] IS NULL")
+                .IsUnique();
 
             builder.ToTable("Users");
-
-            builder.HasData(
-                new User { Id = 1, PersonId = 1, Email = "john.doe@example.com", Username = "johndoe", Password = "AQAAAAIAAYagAAAAEExampleSeedHash01==", CreatedAt = new DateTime(2026, 1, 1) },
-                new User { Id = 2, PersonId = 2, Email = "jane.smith@example.com", Username = "janesmith", Password = "AQAAAAIAAYagAAAAEExampleSeedHash02==", CreatedAt = new DateTime(2026, 1, 1) }
-            );
         }
     }
-
 }

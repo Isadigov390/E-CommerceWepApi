@@ -1,8 +1,11 @@
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Shopping.Application.ServiceInterfaces;
 using Shopping.Application.Services;
+using Shopping.Application.Validations;
 using Shopping.Domain.Interfaces;
 using Shopping.Infrastructure.Repositories;
+using Shopping.Infrastructure.Security;
 using Shopping.Persistence.Data;
 using Shopping.WebApi.Services;
 using System.Text.Json.Serialization;
@@ -49,6 +52,10 @@ builder.Services.AddScoped<IProductDetailService, ProductDetailService>();
 builder.Services.AddScoped<IProductDetailRepository, ProductDetailRepository>();
 
 builder.Services.AddScoped<IUrlService, UrlService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
+builder.Services.AddValidatorsFromAssemblyContaining<RegisterRequestValidator>();
 
 builder.Services.AddExceptionHandler<Shopping.Application.Handlers.GlobalExceptionHandler>();
 

@@ -1,4 +1,5 @@
-﻿using Shopping.Domain.Models.Common;
+﻿using Shopping.Domain.Entities.Accounts;
+using Shopping.Domain.Models.Common;
 
 namespace Shopping.Domain.Models
 {

@@ -158,8 +158,7 @@ namespace Shopping.Application.Services
             };
         }
 
-        public async Task<ProductPagedResponseDTO> GetAllProductsWithPagination(
-            ProductPaginationRequestDTO pagination)
+        public async Task<ProductPagedResponseDTO> GetAllProductsWithPagination(ProductPaginationRequestDTO pagination)
         {
             // 1. BASE
             IQueryable<Product> query = _productRepository.GetAll(p => p.DeletedAt == null);

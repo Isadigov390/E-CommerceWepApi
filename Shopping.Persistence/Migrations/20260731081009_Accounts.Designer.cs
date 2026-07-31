@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Shopping.Persistence.Data;
 
@@ -11,9 +12,11 @@ using Shopping.Persistence.Data;
 namespace Shopping.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260731081009_Accounts")]
+    partial class Accounts
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -22,7 +25,7 @@ namespace Shopping.Persistence.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Shopping.Domain.Entities.Accounts.EmailVerification", b =>
+            modelBuilder.Entity("Shopping.Domain.Entities.Accounts.EmailVerificationCode", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -71,7 +74,7 @@ namespace Shopping.Persistence.Migrations
 
                     b.HasIndex("UserId", "ExpiresAt");
 
-                    b.ToTable("EmailVerifications", (string)null);
+                    b.ToTable("EmailVerificationCodes", (string)null);
                 });
 
             modelBuilder.Entity("Shopping.Domain.Entities.Accounts.User", b =>
@@ -490,10 +493,10 @@ namespace Shopping.Persistence.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Shopping.Domain.Entities.Accounts.EmailVerification", b =>
+            modelBuilder.Entity("Shopping.Domain.Entities.Accounts.EmailVerificationCode", b =>
                 {
                     b.HasOne("Shopping.Domain.Entities.Accounts.User", "User")
-                        .WithMany("EmailVerifications")
+                        .WithMany("EmailVerificationCodes")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -554,7 +557,7 @@ namespace Shopping.Persistence.Migrations
 
             modelBuilder.Entity("Shopping.Domain.Entities.Accounts.User", b =>
                 {
-                    b.Navigation("EmailVerifications");
+                    b.Navigation("EmailVerificationCodes");
 
                     b.Navigation("Reviews");
                 });

@@ -27,11 +27,6 @@ namespace Shopping.Persistence.Configurations
 
             builder.ToTable("Reviews");
 
-            builder.HasData(
-                new Review { Id = 1, Stars = 5, Comment = "Great mouse, very responsive!", ProductId = 1, UserId = 1, CreatedAt = new DateTime(2026, 1, 1) },
-                new Review { Id = 2, Stars = 4, Comment = "Good quality shirt, fits well.", ProductId = 2, UserId = 2, CreatedAt = new DateTime(2026, 1, 1) },
-                new Review { Id = 3, Stars = 5, Comment = "Must-read for every developer.", ProductId = 3, UserId = 1, CreatedAt = new DateTime(2026, 1, 1) }
-            );
         }
     }
 }
