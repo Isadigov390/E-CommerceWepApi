@@ -9,10 +9,12 @@ namespace Shopping.WebApi.Controllers
     public class AccountsController : ControllerBase
     {
         private readonly IAuthService _authService;
+        private readonly IEmailService _emailService;
 
-        public AccountsController(IAuthService authService)
+        public AccountsController(IAuthService authService, IEmailService emailService)
         {
             _authService = authService;
+            _emailService = emailService;
         }
 
         [HttpPost]
@@ -21,6 +23,14 @@ namespace Shopping.WebApi.Controllers
         {
             var user = await _authService.RegisterAsync(registerDTO);
             return CreatedAtAction(nameof(Register), new { id = user.Id }, user);
+        }
+
+        [HttpPost]
+        [Route("verify-email")]
+        public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailRequestDTO verifyDTO)
+        {
+            await _authService.VerifyEmailAsync(verifyDTO);
+            return Ok("Email is confirmed.");
         }
     }
 }

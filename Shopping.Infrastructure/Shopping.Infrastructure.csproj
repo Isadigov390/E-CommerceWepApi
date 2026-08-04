@@ -15,4 +15,8 @@
     <ProjectReference Include="..\Shopping.Persistence\Shopping.Persistence.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Email\" />
+  </ItemGroup>
+
 </Project>
