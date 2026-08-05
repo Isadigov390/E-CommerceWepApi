@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Shopping.Application.DTOs;
 using Shopping.Application.DTOs.ProductDTOs.Requests;
 using Shopping.Application.ServiceInterfaces;
@@ -54,6 +55,7 @@ namespace Shopping.WebApi.Controllers
         //    var products = await _productService.GetAllProductsWithPagination();
         //    return Ok(products);
         //}
+        [Authorize]
         [HttpGet("{id}/with-images")]
         public async Task<IActionResult> GetProductsByIdWithImages([FromRoute] int id)
         {

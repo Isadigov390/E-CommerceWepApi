@@ -32,5 +32,13 @@ namespace Shopping.WebApi.Controllers
             await _authService.VerifyEmailAsync(verifyDTO);
             return Ok("Email is confirmed.");
         }
+
+        [HttpPost]
+        [Route("login")]
+        public async Task<IActionResult> Login([FromBody] LoginRequestDTO loginDTO)
+        {
+            var result = await _authService.LoginAsync(loginDTO);
+            return Ok(result);
+        }
     }
 }

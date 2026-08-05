@@ -7,5 +7,7 @@ namespace Shopping.Application.ServiceInterfaces
     {
         Task VerifyEmailAsync(VerifyEmailRequestDTO dto);
         Task<UserResponseDTO> RegisterAsync(RegisterRequestDTO dto);
+        Task<LoginResponseDTO> LoginAsync(LoginRequestDTO dto);
+
     }
 }

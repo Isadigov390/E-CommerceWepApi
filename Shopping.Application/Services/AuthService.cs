@@ -20,12 +20,14 @@ namespace Shopping.Application.Services
         private readonly IValidator<RegisterRequestDTO> _registerValidator;
         private readonly ILogger<AuthService> _logger;
         private const int MaxAttempts = 5;
+        private readonly ITokenService _tokenService;
         public AuthService(
             IUserRepository userRepository,
             IEmailVerificationRepository emailVerificationRepository,
             IPasswordHasher passwordHasher,
             IEmailService emailService,
             IValidator<RegisterRequestDTO> registerValidator,
+            ITokenService tokenService,
             ILogger<AuthService> logger)
         {
             _userRepository = userRepository;
@@ -34,6 +36,31 @@ namespace Shopping.Application.Services
             _emailService = emailService;
             _registerValidator = registerValidator;
             _logger = logger;
+            _tokenService = tokenService;
+        }
+        public async Task<LoginResponseDTO> LoginAsync(LoginRequestDTO dto)
+        {
+            var email = dto.Email.Trim().ToLowerInvariant();
+            var user = await _userRepository.GetByEmailAsync(email);
+
+            if (user is null || !_passwordHasher.Verify(dto.Password, user.PasswordHash))
+            {
+                throw new ValidationException("Email or password is incorrect.");
+            }
+
+            if (!user.EmailConfirmed)
+            {
+                throw new ConflictException("Email is not confirmed.");
+            }
+
+            var tokenResult = _tokenService.CreateToken(user);
+
+            return new LoginResponseDTO
+            {
+                Token = tokenResult.Token,
+                ExpiresAtUtc = tokenResult.ExpiresAtUtc,
+                Email = user.Email
+            };
         }
         public async Task VerifyEmailAsync(VerifyEmailRequestDTO dto)
         {
