@@ -62,6 +62,7 @@ namespace Shopping.WebApi.Controllers
             var product = await _productService.GetProductByIdWithImages(id);
             return Ok(product);
         }
+        [Authorize]
         [HttpGet("{id}/with-all-images")]
         public async Task<IActionResult> GetProductsByIdWithAllImages([FromRoute] int id)
         {
@@ -75,14 +76,15 @@ namespace Shopping.WebApi.Controllers
             var products = await _productService.GetAllProductsWithPagination(pagination);
             return Ok(products);
         }
-
+        
+        [Authorize]
         [HttpPost("with-images")]
         public async Task<IActionResult> CreateProductWithImageIds(ProductWithImageIdsRequestDTO request)
         {
             await _productService.CreateProductWithImages(request);
             return Ok();
         }
-
+        [Authorize]
         [HttpPut("{id}/with-images")]
         public async Task<IActionResult> UpdateProductWithImages([FromRoute] int id, ProductWithImageIdsRequestDTO request)
         {
