@@ -68,6 +68,7 @@ namespace Shopping.WebApi.Controllers
             var product = await _productService.GetProductByIdWithAllImages(id);
             return Ok(product);
         }
+        [Authorize]
         [HttpGet("with-images")]
         public async Task<IActionResult> GetProductsPaged([FromQuery] ProductPaginationRequestDTO pagination)
         {
