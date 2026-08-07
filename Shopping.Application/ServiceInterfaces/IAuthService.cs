@@ -5,9 +5,10 @@ namespace Shopping.Application.ServiceInterfaces
 {
     public interface IAuthService
     {
-        Task VerifyEmailAsync(VerifyEmailRequestDTO dto);
         Task<UserResponseDTO> RegisterAsync(RegisterRequestDTO dto);
-        Task<LoginResponseDTO> LoginAsync(LoginRequestDTO dto);
-
+        Task VerifyEmailAsync(VerifyEmailRequestDTO dto);
+        Task<AuthenticationResult> LoginAsync(LoginRequestDTO dto);
+        Task<AuthenticationResult> RefreshAsync(string? refreshToken);
+        Task LogoutAsync(string? refreshToken); 
     }
 }

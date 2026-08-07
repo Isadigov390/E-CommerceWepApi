@@ -1,4 +1,4 @@
-﻿namespace Shopping.WebApi.Services
+﻿namespace Shopping.Infrastructure.Settings
 {
     public class EmailSettings
     {

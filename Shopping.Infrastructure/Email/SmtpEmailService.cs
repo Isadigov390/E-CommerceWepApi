@@ -3,8 +3,9 @@ using MailKit.Security;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using Shopping.Application.ServiceInterfaces;
+using Shopping.Infrastructure.Settings;
 
-namespace Shopping.WebApi.Services
+namespace Shopping.Infrastructure.Email
 {
     public class SmtpEmailService : IEmailService
     {
@@ -18,10 +19,10 @@ namespace Shopping.WebApi.Services
         public async Task SendAsync(string toEmail, string subject, string htmlBody)
         {
             var message = new MimeMessage();
+
             message.From.Add(new MailboxAddress(_settings.SenderName, _settings.SenderEmail));
             message.To.Add(MailboxAddress.Parse(toEmail));
             message.Subject = subject;
-
             message.Body = new BodyBuilder { HtmlBody = htmlBody }.ToMessageBody();
 
             using var client = new SmtpClient();

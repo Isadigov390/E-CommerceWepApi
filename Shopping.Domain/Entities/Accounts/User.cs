@@ -12,11 +12,11 @@ namespace Shopping.Domain.Entities.Accounts
         public string PasswordHash { get; set; } = string.Empty;
 
         public bool EmailConfirmed { get; set; } = false;
-        public ICollection<EmailVerification> EmailVerifications { get; set; }
-            = new List<EmailVerification>();
+        public ICollection<EmailVerification> EmailVerifications { get; set; } = new List<EmailVerification>();
 
-        public ICollection<Review> Reviews { get; set; }
-            = new List<Review>();
+        public ICollection<Review> Reviews { get; set; } = new List<Review>();
+
+        public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
     }
 
 }

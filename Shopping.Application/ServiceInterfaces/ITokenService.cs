@@ -5,6 +5,10 @@ namespace Shopping.Application.ServiceInterfaces
 {
     public interface ITokenService
     {
-        TokenResult CreateToken(User user);
+        TokenResult CreateAccessToken(User user);
+
+        RefreshTokenResult CreateRefreshToken();
+
+        string HashRefreshToken(string refreshToken);
     }
 }

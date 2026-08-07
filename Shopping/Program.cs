@@ -7,16 +7,19 @@ using Shopping.Application.ServiceInterfaces;
 using Shopping.Application.Services;
 using Shopping.Application.Validations;
 using Shopping.Domain.Interfaces;
+using Shopping.Infrastructure.Authentication;
+using Shopping.Infrastructure.Email;
 using Shopping.Infrastructure.Repositories;
 using Shopping.Infrastructure.Security;
+using Shopping.Infrastructure.Settings;
+using Shopping.Infrastructure.Storage;
 using Shopping.Persistence.Data;
-using Shopping.WebApi.Services;
 using System.Text;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Adding services to the container.
 
 
 builder.Services.AddControllers()
@@ -90,6 +93,7 @@ builder.Services.AddScoped<IEmailService, SmtpEmailService>();
 builder.Services.AddScoped<IEmailVerificationRepository, EmailVerificationRepository>();
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 builder.Services.AddScoped<ITokenService, JwtTokenService>();
+builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
 var jwtSettings = builder.Configuration
     .GetSection("JwtSettings")

@@ -21,6 +21,7 @@ namespace Shopping.Application.Services
         private readonly ILogger<AuthService> _logger;
         private const int MaxAttempts = 5;
         private readonly ITokenService _tokenService;
+        private readonly IRefreshTokenRepository _refreshTokenRepository;
         public AuthService(
             IUserRepository userRepository,
             IEmailVerificationRepository emailVerificationRepository,
@@ -28,7 +29,8 @@ namespace Shopping.Application.Services
             IEmailService emailService,
             IValidator<RegisterRequestDTO> registerValidator,
             ITokenService tokenService,
-            ILogger<AuthService> logger)
+            ILogger<AuthService> logger,
+            IRefreshTokenRepository refreshTokenRepository)
         {
             _userRepository = userRepository;
             _emailVerificationRepository = emailVerificationRepository;
@@ -37,30 +39,119 @@ namespace Shopping.Application.Services
             _registerValidator = registerValidator;
             _logger = logger;
             _tokenService = tokenService;
+            _refreshTokenRepository = refreshTokenRepository;
         }
-        public async Task<LoginResponseDTO> LoginAsync(LoginRequestDTO dto)
+        public async Task LogoutAsync(string? refreshToken)
+        {
+            if (string.IsNullOrWhiteSpace(refreshToken))
+            {
+                throw new UnauthorizedException("Refresh token is missing.");
+            }
+
+            var tokenHash =
+                _tokenService.HashRefreshToken(refreshToken);
+
+            var storedToken =
+                await _refreshTokenRepository
+                    .GetByTokenHashAsync(tokenHash);
+
+            if (storedToken is null ||
+                storedToken.RevokedAtUtc is not null)
+            {
+                return;
+            }
+
+            storedToken.RevokedAtUtc = DateTime.UtcNow;
+
+            await _refreshTokenRepository
+                .RevokeAsync(storedToken);
+        }
+        public async Task<AuthenticationResult> LoginAsync(LoginRequestDTO dto)
         {
             var email = dto.Email.Trim().ToLowerInvariant();
+
             var user = await _userRepository.GetByEmailAsync(email);
 
-            if (user is null || !_passwordHasher.Verify(dto.Password, user.PasswordHash))
+            if (user is null ||
+                !_passwordHasher.Verify(
+                    dto.Password,
+                    user.PasswordHash))
             {
-                throw new ValidationException("Email or password is incorrect.");
+                throw new UnauthorizedException(
+                    "Email or password is incorrect.");
             }
 
             if (!user.EmailConfirmed)
             {
-                throw new ConflictException("Email is not confirmed.");
+                throw new ConflictException(
+                    "Email is not confirmed.");
             }
 
-            var tokenResult = _tokenService.CreateToken(user);
+            var accessToken = _tokenService.CreateAccessToken(user);
 
-            return new LoginResponseDTO
+            var refreshToken = _tokenService.CreateRefreshToken();
+
+            var refreshTokenEntity = new RefreshToken
             {
-                Token = tokenResult.Token,
-                ExpiresAtUtc = tokenResult.ExpiresAtUtc,
-                Email = user.Email
+                UserId = user.Id,
+                TokenHash = refreshToken.TokenHash,
+                ExpiresAtUtc = refreshToken.ExpiresAtUtc
             };
+
+            await _refreshTokenRepository.AddAsync(refreshTokenEntity);
+
+            return CreateAuthenticationResult(user, accessToken, refreshToken);
+        }
+        public async Task<AuthenticationResult> RefreshAsync(string? refreshToken)
+        {
+            if (string.IsNullOrWhiteSpace(refreshToken))
+            {
+                throw new UnauthorizedException("Refresh token is invalid.");
+            }
+
+            var tokenHash = _tokenService.HashRefreshToken(refreshToken);
+            var currentToken = await _refreshTokenRepository.GetByTokenHashAsync(tokenHash);
+
+            if (currentToken is null)
+            {
+                throw new UnauthorizedException("Refresh token is invalid.");
+            }
+
+            if (currentToken.RevokedAtUtc is not null)
+            {
+                await _refreshTokenRepository.RevokeAllActiveForUserAsync(currentToken.UserId);
+                throw new UnauthorizedException("Refresh token is invalid.");
+            }
+
+            var utcNow = DateTime.UtcNow;
+
+            if (currentToken.ExpiresAtUtc <= utcNow)
+            {
+                throw new UnauthorizedException("Refresh token has expired.");
+            }
+
+            var user = currentToken.User;
+
+            if (!user.EmailConfirmed)
+            {
+                throw new UnauthorizedException("User cannot refresh this session.");
+            }
+
+            var newAccessToken = _tokenService.CreateAccessToken(user);
+            var newRefreshToken = _tokenService.CreateRefreshToken();
+
+            currentToken.RevokedAtUtc = utcNow;
+
+            var newRefreshTokenEntity = new RefreshToken
+            {
+                UserId = user.Id,
+                TokenHash = newRefreshToken.TokenHash,
+                ExpiresAtUtc = newRefreshToken.ExpiresAtUtc
+            };
+
+            await _refreshTokenRepository.RotateAsync(currentToken, newRefreshTokenEntity);
+
+            return CreateAuthenticationResult(user, newAccessToken, newRefreshToken);
         }
         public async Task VerifyEmailAsync(VerifyEmailRequestDTO dto)
         {
@@ -167,6 +258,17 @@ namespace Shopping.Application.Services
         private static string GenerateCode()
         {
             return RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
+        }
+        private static AuthenticationResult CreateAuthenticationResult(User user, TokenResult accessToken, RefreshTokenResult refreshToken)
+        {
+            return new AuthenticationResult
+            {
+                AccessToken = accessToken.Token,
+                AccessTokenExpiresAtUtc = accessToken.ExpiresAtUtc,
+                RefreshToken = refreshToken.Token,
+                RefreshTokenExpiresAtUtc = refreshToken.ExpiresAtUtc,
+                Email = user.Email
+            };
         }
     }
 }
