@@ -14,6 +14,7 @@ using Shopping.Infrastructure.Security;
 using Shopping.Infrastructure.Settings;
 using Shopping.Infrastructure.Storage;
 using Shopping.Persistence.Data;
+using Shopping.WebApi.Services.Cookies;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -95,11 +96,10 @@ builder.Services.AddScoped<IEmailVerificationRepository, EmailVerificationReposi
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
 builder.Services.AddScoped<ITokenService, JwtTokenService>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+builder.Services.AddScoped<RefreshTokenCookieService>();
 
-var jwtSettings = builder.Configuration
-    .GetSection("JwtSettings")
-    .Get<JwtSettings>()
-    ?? throw new InvalidOperationException("JwtSettings are missing.");
+var jwtSettings = builder.Configuration.GetSection("JwtSettings")
+    .Get<JwtSettings>() ?? throw new InvalidOperationException("JwtSettings are missing.");
 
 if (string.IsNullOrWhiteSpace(jwtSettings.Key))
 {
