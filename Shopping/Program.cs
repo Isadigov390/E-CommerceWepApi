@@ -119,8 +119,7 @@ builder.Services
             ValidAudience = jwtSettings.Audience,
 
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtSettings.Key)),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key)),
 
             ValidateLifetime = true,
             ClockSkew = TimeSpan.Zero
