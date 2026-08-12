@@ -71,6 +71,13 @@ namespace Shopping.WebApi.Controllers
 
             return NoContent();
         }
+        [HttpPost("resend-verification-email")]
+        public async Task<IActionResult> ResendVerificationEmail([FromBody] ResendVerificationEmailRequestDTO request)
+        {
+            await _authService.ResendVerificationEmailAsync(request);
+
+            return NoContent();
+        }
 
         private static LoginResponseDTO CreateLoginResponse(AuthenticationResult result)
         {

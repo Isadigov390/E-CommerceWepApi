@@ -9,6 +9,7 @@ namespace Shopping.Application.ServiceInterfaces
         Task VerifyEmailAsync(VerifyEmailRequestDTO dto);
         Task<AuthenticationResult> LoginAsync(LoginRequestDTO dto);
         Task<AuthenticationResult> RefreshAsync(string? refreshToken);
-        Task LogoutAsync(string? refreshToken); 
+        Task LogoutAsync(string? refreshToken);
+        Task ResendVerificationEmailAsync (ResendVerificationEmailRequestDTO dto);
     }
 }

@@ -76,15 +76,13 @@ namespace Shopping.Application.Services
                 !_passwordHasher.Verify(
                     dto.Password,
                     user.PasswordHash))
-            {
-                throw new UnauthorizedException(
-                    "Email or password is incorrect.");
+            { 
+                throw new UnauthorizedException("Email or password is incorrect.");
             }
 
             if (!user.EmailConfirmed)
             {
-                throw new ConflictException(
-                    "Email is not confirmed.");
+                throw new ConflictException("Email is not confirmed.");
             }
 
             var accessToken = _tokenService.CreateAccessToken(user);
@@ -194,7 +192,45 @@ namespace Shopping.Application.Services
             user.EmailConfirmed = true;
             await _userRepository.UpdateAsync(user);
         }
+        public async Task ResendVerificationEmailAsync(ResendVerificationEmailRequestDTO dto)
+        {
+            var email = dto.Email.Trim().ToLowerInvariant();
+            var user = await _userRepository.GetByEmailAsync(email);
+            if (user is null)
+            {
+                throw new NotFoundException("User is not found.");
+            }
+            if (user.EmailConfirmed)
+            {
+                throw new ConflictException("Email is already confirmed.");
+            }
+            var latestVerification = await _emailVerificationRepository.GetLatestAsync(user.Id);
 
+            if (DateTime.UtcNow - latestVerification?.CreatedAt < TimeSpan.FromMinutes(0.5))
+            {
+                throw new ValidationException("You can only request a new verification code every 30 seconds.");
+            }
+            var code = GenerateCode();
+            var newVerification = new EmailVerification
+            {
+                UserId = user.Id,
+                CodeHash = _passwordHasher.Hash(code),
+                ExpiresAt = DateTime.UtcNow.AddMinutes(15),
+                AttemptCount = 0
+            };
+            await _emailVerificationRepository.ResendVerificationEmailAsync(user.Id, newVerification);
+            try
+            {
+                await _emailService.SendAsync(
+                    user.Email,
+                    "Verify your email",
+                    $"<p>Your new verification code is <b>{code}</b></p><p>It expires in 15 minutes.</p>");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Failed to send verification email.");
+            }
+        }
         public async Task<UserResponseDTO> RegisterAsync(RegisterRequestDTO dto)
         {
             var validationResult = await _registerValidator.ValidateAsync(dto);
