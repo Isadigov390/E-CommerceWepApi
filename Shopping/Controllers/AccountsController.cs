@@ -78,6 +78,13 @@ namespace Shopping.WebApi.Controllers
 
             return NoContent();
         }
+        [HttpPost("forget-password")]
+        public async Task<IActionResult> ForgetPassword([FromBody] ForgetPasswordRequestDTO request)
+        {
+            var response = await _authService.ForgetPasswordAsync(request);
+
+            return Ok(response);
+        }
 
         private static LoginResponseDTO CreateLoginResponse(AuthenticationResult result)
         {

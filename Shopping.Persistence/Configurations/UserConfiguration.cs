@@ -16,6 +16,7 @@ namespace Shopping.Persistence.Configurations
             builder.Property(m => m.PasswordHash).HasColumnType("nvarchar").HasMaxLength(255).IsRequired();
             builder.Property(m => m.EmailConfirmed).HasColumnType("bit").IsRequired().HasDefaultValue(false);
 
+
             builder.HasIndex(m => m.Email)
                 .HasFilter("[DeletedAt] IS NULL")
                 .IsUnique();

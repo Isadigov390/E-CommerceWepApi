@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Shopping.Application.ServiceInterfaces;
 using Shopping.Application.Services;
+using Shopping.Application.Settings;
 using Shopping.Application.Validations;
 using Shopping.Domain.Interfaces;
 using Shopping.Infrastructure.Authentication;
@@ -97,6 +98,8 @@ builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSet
 builder.Services.AddScoped<ITokenService, JwtTokenService>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddScoped<RefreshTokenCookieService>();
+builder.Services.AddScoped<IPasswordResetTokenRepository, PasswordResetTokenRepository>();
+builder.Services.Configure<PasswordResetSettings>(builder.Configuration.GetSection("PasswordResetSettings"));
 
 var jwtSettings = builder.Configuration.GetSection("JwtSettings")
     .Get<JwtSettings>() ?? throw new InvalidOperationException("JwtSettings are missing.");

@@ -32,7 +32,7 @@ namespace Shopping.Infrastructure.Repositories
             return response;
         }
 
-        public async Task<EmailVerification> ResendVerificationEmailAsync(int userId, EmailVerification newVerification)
+        public async Task<EmailVerification> ResendVerificationEmailAsync(int userId, EmailVerification newVerification) // I might want to rename this method to something like "CreateNewVerificationAndExpireOldOnesAsync" for clarity
         {
             var utcNow = DateTime.UtcNow;
 

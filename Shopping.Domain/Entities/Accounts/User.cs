@@ -17,6 +17,7 @@ namespace Shopping.Domain.Entities.Accounts
         public ICollection<Review> Reviews { get; set; } = new List<Review>();
 
         public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
+        public ICollection<PasswordResetToken> PasswordResetTokens { get; set; } = new List<PasswordResetToken>();
     }
 
 }

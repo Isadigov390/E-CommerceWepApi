@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Shopping.Persistence.Data;
 
@@ -11,9 +12,11 @@ using Shopping.Persistence.Data;
 namespace Shopping.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260813045828_Users-MustChangePassword")]
+    partial class UsersMustChangePassword
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -72,57 +75,6 @@ namespace Shopping.Persistence.Migrations
                     b.HasIndex("UserId", "ExpiresAt");
 
                     b.ToTable("EmailVerifications", (string)null);
-                });
-
-            modelBuilder.Entity("Shopping.Domain.Entities.Accounts.PasswordResetToken", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("CreatedAt")
-                        .HasColumnType("datetime");
-
-                    b.Property<int?>("CreatedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("datetime");
-
-                    b.Property<int?>("DeletedBy")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("ExpiresAtUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("LastModifiedAt")
-                        .HasColumnType("datetime");
-
-                    b.Property<int?>("LastModifiedBy")
-                        .HasColumnType("int");
-
-                    b.Property<string>("TokenHash")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar");
-
-                    b.Property<DateTime?>("UsedAtUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TokenHash")
-                        .IsUnique()
-                        .HasFilter("[DeletedAt] IS NULL");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("PasswordResetTokens", (string)null);
                 });
 
             modelBuilder.Entity("Shopping.Domain.Entities.Accounts.RefreshToken", b =>
@@ -211,6 +163,11 @@ namespace Shopping.Persistence.Migrations
 
                     b.Property<int?>("LastModifiedBy")
                         .HasColumnType("int");
+
+                    b.Property<bool>("MustChangePassword")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -603,17 +560,6 @@ namespace Shopping.Persistence.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Shopping.Domain.Entities.Accounts.PasswordResetToken", b =>
-                {
-                    b.HasOne("Shopping.Domain.Entities.Accounts.User", "User")
-                        .WithMany("PasswordResetTokens")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Shopping.Domain.Entities.Accounts.RefreshToken", b =>
                 {
                     b.HasOne("Shopping.Domain.Entities.Accounts.User", "User")
@@ -679,8 +625,6 @@ namespace Shopping.Persistence.Migrations
             modelBuilder.Entity("Shopping.Domain.Entities.Accounts.User", b =>
                 {
                     b.Navigation("EmailVerifications");
-
-                    b.Navigation("PasswordResetTokens");
 
                     b.Navigation("RefreshTokens");
 
