@@ -8,5 +8,6 @@ namespace Shopping.Domain.Interfaces
         Task<PasswordResetToken?> GetActiveByTokenHashAsync(string tokenHash);
         Task<PasswordResetToken?> GetLatestForUserAsync(int userId);
         Task CreateAndExpireOldTokensAsync(int userId, PasswordResetToken newToken);
+        Task ResetPasswordAsync(PasswordResetToken resetToken);
     }
 }

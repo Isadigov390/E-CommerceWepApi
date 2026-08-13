@@ -86,6 +86,12 @@ namespace Shopping.WebApi.Controllers
             return Ok(response);
         }
 
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDTO request)
+        {
+            await _authService.ResetPasswordAsync(request);
+            return Ok(new { message = "Password has been reset successfully. Please log in." });
+        }
         private static LoginResponseDTO CreateLoginResponse(AuthenticationResult result)
         {
             return new LoginResponseDTO

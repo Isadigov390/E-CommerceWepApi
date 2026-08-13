@@ -28,6 +28,7 @@ namespace Shopping.Application.Services
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IPasswordResetTokenRepository _passwordResetTokenRepository;
         private readonly PasswordResetSettings _passwordResetSettings;
+        private readonly IValidator<ResetPasswordRequestDTO> _resetPasswordValidator;
         public AuthService(
             IUserRepository userRepository,
             IEmailVerificationRepository emailVerificationRepository,
@@ -38,8 +39,8 @@ namespace Shopping.Application.Services
             ILogger<AuthService> logger,
             IPasswordResetTokenRepository passwordResetTokenRepository,
             IRefreshTokenRepository refreshTokenRepository,
-            IOptions<PasswordResetSettings> passwordResetSettings
-
+            IOptions<PasswordResetSettings> passwordResetSettings,
+            IValidator<ResetPasswordRequestDTO> resetPasswordValidator
             )
         {
             _userRepository = userRepository;
@@ -52,6 +53,7 @@ namespace Shopping.Application.Services
             _refreshTokenRepository = refreshTokenRepository;
             _passwordResetTokenRepository = passwordResetTokenRepository;
             _passwordResetSettings = passwordResetSettings.Value;
+            _resetPasswordValidator = resetPasswordValidator;   
         }
 
 
@@ -390,6 +392,36 @@ namespace Shopping.Application.Services
             }
 
             return response;
+        }
+        public async Task ResetPasswordAsync(ResetPasswordRequestDTO dto)
+        {
+
+            var validationResult = await _resetPasswordValidator.ValidateAsync(dto);
+
+            if (!validationResult.IsValid)
+            {
+                var message = string.Join(" ", validationResult.Errors.Select(x => x.ErrorMessage));
+                throw new ValidationException(message);
+            }
+
+            var tokenHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(dto.Token.Trim())));
+            var resetToken = await _passwordResetTokenRepository.GetActiveByTokenHashAsync(tokenHash);
+
+            if (resetToken is null)
+            {
+                throw new ValidationException("Password reset link is invalid or expired.");
+            }
+
+            if (_passwordHasher.Verify(dto.NewPassword, resetToken.User.PasswordHash))
+            {
+                throw new ValidationException("New password must be different from the old password.");
+            }
+
+            resetToken.User.PasswordHash = _passwordHasher.Hash(dto.NewPassword);
+            resetToken.UsedAtUtc = DateTime.UtcNow;
+
+            await _passwordResetTokenRepository.ResetPasswordAsync(resetToken);
+            await _refreshTokenRepository.RevokeAllActiveForUserAsync(resetToken.UserId);
         }
     }
 }

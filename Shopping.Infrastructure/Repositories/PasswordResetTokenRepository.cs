@@ -45,5 +45,12 @@ namespace Shopping.Infrastructure.Repositories
             await _appDbContext.Set<PasswordResetToken>().AddAsync(newToken);
             await _appDbContext.SaveChangesAsync();
         }
+
+        public async Task ResetPasswordAsync(PasswordResetToken resetToken)
+        {
+            _appDbContext.Set<User>().Update(resetToken.User);
+            _appDbContext.Set<PasswordResetToken>().Update(resetToken);
+            await _appDbContext.SaveChangesAsync();
+        }
     }
 }

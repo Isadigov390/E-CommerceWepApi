@@ -12,5 +12,6 @@ namespace Shopping.Application.ServiceInterfaces
         Task LogoutAsync(string? refreshToken);
         Task ResendVerificationEmailAsync (ResendVerificationEmailRequestDTO dto);
         Task<ForgetPasswordResponseDTO> ForgetPasswordAsync(ForgetPasswordRequestDTO dto);
+        Task ResetPasswordAsync(ResetPasswordRequestDTO dto);
     }
 }
