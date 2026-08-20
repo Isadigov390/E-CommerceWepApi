@@ -27,7 +27,8 @@ namespace Shopping.Infrastructure.Repositories
 
         public async Task<Product?> GetByIdWithParentsAndChildren(int id)
         {
-            var product =  await _appDbContext.Set<Product>().Include(m=>m.ProductImages).Include(m=>m.ProductDetail).Include(m=>m.Category)
+            var product =  await _appDbContext.Set<Product>().Include(m=>m.ProductImages).Include(m=>m.ProductDetail).Include(m=>m.Category).Include(r=>r.Reviews.Where(rD=>rD.DeletedAt == null))
+                .Where(r => r.DeletedAt == null)
                 .FirstOrDefaultAsync(p=>p.Id == id); 
             if (product == null)
             {

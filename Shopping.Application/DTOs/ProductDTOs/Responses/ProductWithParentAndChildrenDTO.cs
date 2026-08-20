@@ -9,6 +9,7 @@ namespace Shopping.Application.DTOs.ProductDTOs.Responses
         public string Title { get; set; } = string.Empty;
         public decimal Price { get; set; }
         public decimal Rating { get; set; }
+        public int ReviewCount { get; set; }
         public string Description { get; set; } = string.Empty;
         public int Quantity { get; set; }
         public string Brand { get; set; } = string.Empty;

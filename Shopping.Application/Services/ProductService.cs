@@ -256,8 +256,11 @@ namespace Shopping.Application.Services
             var products = await query
                 .Skip(pagination.Skip)
                 .Take(pagination.Limit)
-                .Include(p => p.ProductImages.Where(i => i.IsMain && i.DeletedAt == null))
+                .Include(p => p.ProductImages
+                    .Where(i => i.IsMain && i.DeletedAt == null))
                 .Include(p => p.Category)
+                .Include(p => p.Reviews
+                    .Where(r => r.DeletedAt == null))
                 .ToListAsync();
 
             // 6. PROJECT in memory (BuildUrl can't translate to SQL)
@@ -271,6 +274,12 @@ namespace Shopping.Application.Services
                     Id = p.Id,
                     Title = p.Title,
                     Price = p.Price,
+                    Rating = p.Reviews.Any()
+                            ? Math.Round(
+                                p.Reviews.Average(r => (decimal)r.Stars),
+                                1)
+                            : 0,
+
                     Description = p.Description,
                     Quantity = p.Quantity,
                     Brand = p.Brand,
@@ -405,6 +414,8 @@ namespace Shopping.Application.Services
                 Id = product.Id,
                 Title = product.Title,
                 Price = product.Price,
+                Rating = product.Reviews.Any() ? Math.Round(product.Reviews.Average(r => (decimal)r.Stars),1): 0,
+                ReviewCount = product.Reviews.Count,
                 Description = product.Description,
                 Quantity = product.Quantity,
                 Brand = product.Brand,
