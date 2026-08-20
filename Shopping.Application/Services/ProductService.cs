@@ -169,6 +169,21 @@ namespace Shopping.Application.Services
         }
         public async Task<ProductPagedResponseDTO> GetAllProductsWithPagination(ProductPaginationRequestDTO pagination)
         {
+            if (pagination.MinPrice.HasValue && pagination.MinPrice.Value < 0)
+            {
+                throw new ValidationException("Minimum price cannot be negative.");
+            }
+
+            if (pagination.MaxPrice.HasValue && pagination.MaxPrice.Value < 0)
+            {
+                throw new ValidationException("Maximum price cannot be negative.");
+            }
+
+            if (pagination.MinPrice.HasValue && pagination.MaxPrice.HasValue && pagination.MinPrice.Value > pagination.MaxPrice.Value)
+            {
+                throw new ValidationException("Minimum price cannot be greater than maximum price.");
+            }
+
             // 1. BASE
             IQueryable<Product> query = _productRepository.GetAll(p => p.DeletedAt == null);
 
@@ -194,6 +209,16 @@ namespace Shopping.Application.Services
                 {
                     query = query.Where(p => brands.Contains(p.Brand));
                 }
+            }
+
+            if (pagination.MinPrice.HasValue)
+            {
+                query = query.Where(p => p.Price >= pagination.MinPrice.Value);
+            }
+
+            if (pagination.MaxPrice.HasValue)
+            {
+                query = query.Where(p => p.Price <= pagination.MaxPrice.Value);
             }
 
             // 3. TOTAL - after search, before paging
