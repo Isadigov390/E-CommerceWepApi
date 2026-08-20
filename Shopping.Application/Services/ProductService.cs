@@ -158,6 +158,15 @@ namespace Shopping.Application.Services
             };
         }
 
+        public async Task<IReadOnlyList<string>> GetAllBrandsAsync()
+        {
+            return await _productRepository
+                .GetAll(p => p.DeletedAt == null && p.Brand != "")
+                .Select(p => p.Brand.Trim())
+                .Distinct()
+                .OrderBy(brand => brand)
+                .ToListAsync();
+        }
         public async Task<ProductPagedResponseDTO> GetAllProductsWithPagination(ProductPaginationRequestDTO pagination)
         {
             // 1. BASE
@@ -168,6 +177,23 @@ namespace Shopping.Application.Services
             {
                 var term = pagination.Search.Trim();
                 query = query.Where(p => p.Title.Contains(term));
+            }
+            // Category filter
+            if (pagination.CategoryIds.Count > 0)
+            {
+                query = query.Where(p => pagination.CategoryIds.Contains(p.CategoryId));
+            }
+
+            if (pagination.Brands.Count > 0)
+            {
+                var brands = pagination.Brands.Where(brand => !string.IsNullOrWhiteSpace(brand))
+                    .Select(brand => brand.Trim())
+                    .ToList();
+
+                if (brands.Count > 0)
+                {
+                    query = query.Where(p => brands.Contains(p.Brand));
+                }
             }
 
             // 3. TOTAL - after search, before paging

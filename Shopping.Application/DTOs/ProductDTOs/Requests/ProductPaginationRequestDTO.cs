@@ -8,6 +8,7 @@ namespace Shopping.Application.DTOs.ProductDTOs.Requests
         public int Skip { get; set; } = 0;
         public string? Search { get; set; }
         public ProductSortBy SortBy { get; set; } = ProductSortBy.Newest;
-
+        public List<int> CategoryIds { get; set; } = new();
+        public List<string> Brands { get; set; } = new();
     }
 }
