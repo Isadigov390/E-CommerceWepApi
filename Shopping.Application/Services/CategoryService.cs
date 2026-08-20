@@ -23,14 +23,19 @@ namespace Shopping.Application.Services
             await _categoryRepository.AddAsync(category);
         }
 
-        public async Task<IReadOnlyList<Category>> GetAllAsync()
+        public async Task<IReadOnlyList<CategoryListResponseDTO>> GetAllAsync()
         {
-            var entities = await _categoryRepository.GetAllAsync();
-            if (entities == null || !entities.Any())
-            {
-                throw new KeyNotFoundException();
-            }
-            return entities;
+            var categories = await _categoryRepository.GetAllAsync();
+
+            return categories
+                .Where(category => category.DeletedAt == null)
+                .OrderBy(category => category.Name)
+                .Select(category => new CategoryListResponseDTO
+                {
+                    Id = category.Id,
+                    Name = category.Name
+                })
+                .ToList();
         }
 
         public async Task<Category> GetByIdAsync(int id)
