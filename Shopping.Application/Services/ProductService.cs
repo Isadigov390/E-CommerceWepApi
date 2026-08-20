@@ -184,9 +184,26 @@ namespace Shopping.Application.Services
             {
                 throw new ValidationException("Minimum price cannot be greater than maximum price.");
             }
+            if (pagination.MinRating.HasValue && (pagination.MinRating.Value < 0 || pagination.MinRating.Value > 5))
+            {
+                throw new ValidationException("Minimum rating must be between 0 and 5.");
+            }
+
+            if (pagination.MaxRating.HasValue && (pagination.MaxRating.Value < 0 || pagination.MaxRating.Value > 5))
+            {
+                throw new ValidationException("Maximum rating must be between 0 and 5.");
+            }
+
+            if (pagination.MinRating.HasValue && pagination.MaxRating.HasValue && pagination.MinRating.Value > pagination.MaxRating.Value)
+            {
+                throw new ValidationException("Minimum rating cannot be greater than maximum rating.");
+            }
 
             // 1. BASE
             IQueryable<Product> query = _productRepository.GetAll(p => p.DeletedAt == null);
+
+            var maxPrice = await query.MaxAsync(p => (decimal?)p.Price) ?? 0;
+
 
             // 2. SEARCH - only if the caller actually sent something
             if (!string.IsNullOrWhiteSpace(pagination.Search))
@@ -225,10 +242,22 @@ namespace Shopping.Application.Services
             {
                 query = query.Where(p => p.Quantity > 0);
             }
+            if (pagination.MinRating.HasValue)
+            {
+                query = query.Where(product =>
+                    (product.Reviews.Where(review => review.DeletedAt == null)
+                        .Average(review => (decimal?)review.Stars) ?? 0) >= pagination.MinRating.Value);
+            }
+
+            if (pagination.MaxRating.HasValue)
+            {
+                query = query.Where(product =>
+                    (product.Reviews.Where(review => review.DeletedAt == null)
+                        .Average(review => (decimal?)review.Stars) ?? 0) <= pagination.MaxRating.Value);
+            }
 
             // 3. TOTAL - after search, before paging
             var total = await query.CountAsync();
-            var maxPrice = await query.MaxAsync(p => (decimal?)p.Price) ?? 0;
             // 4. SORT
             query = pagination.SortBy switch
             {
