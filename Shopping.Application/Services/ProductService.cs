@@ -220,6 +220,10 @@ namespace Shopping.Application.Services
             {
                 query = query.Where(p => p.Price <= pagination.MaxPrice.Value);
             }
+            if (pagination.OnlyAvailable)
+            {
+                query = query.Where(p => p.Quantity > 0);
+            }
 
             // 3. TOTAL - after search, before paging
             var total = await query.CountAsync();
