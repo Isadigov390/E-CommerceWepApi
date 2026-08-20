@@ -228,7 +228,7 @@ namespace Shopping.Application.Services
 
             // 3. TOTAL - after search, before paging
             var total = await query.CountAsync();
-
+            var maxPrice = await query.MaxAsync(p => (decimal?)p.Price) ?? 0;
             // 4. SORT
             query = pagination.SortBy switch
             {
@@ -268,6 +268,7 @@ namespace Shopping.Application.Services
             return new ProductPagedResponseDTO
             {
                 Total = total,
+                MaxPrice = maxPrice,
                 Skip = pagination.Skip,
                 Limit = pagination.Limit,
                 Products = products.Select(p => new ProductWithCategoryResponseDTO
