@@ -3,6 +3,7 @@ using Shopping.Application.DTOs.ProductDetailDTOs.Responses;
 using Shopping.Application.DTOs.ProductDTOs.Requests;
 using Shopping.Application.DTOs.ProductDTOs.Responses;
 using Shopping.Application.DTOs.ProductImageDTOs.Responses;
+using Shopping.Application.DTOs.ReviewDTOs.Responses;
 using Shopping.Application.Handlers.Exceptions;
 using Shopping.Application.ServiceInterfaces;
 using Shopping.Domain.Enums;
@@ -426,8 +427,20 @@ namespace Shopping.Application.Services
                 Warranty = product.ProductDetail?.Warranty ?? WarrantyType.NoWarranty,
                 CreatedAt = product.CreatedAt,
                 LastModifiedAt = product.LastModifiedAt,
-                Images = images
-               
+                Images = images,
+                Reviews = product.Reviews
+                        .OrderByDescending(review => review.CreatedAt)
+                        .Select(review => new ReviewResponseDTO
+                        {
+                            Id = review.Id,
+                            Rating = review.Stars,
+                            Comment = review.Comment,
+                            Name = review.User.Name,
+                            Surname = review.User.Surname,
+                            CreatedAt = review.CreatedAt
+                        })
+                        .ToList(),
+
             };
         }
         public async Task UpdateProductWithImages(int productId, ProductWithImageIdsRequestDTO dto)

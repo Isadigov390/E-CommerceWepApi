@@ -1,4 +1,5 @@
 ﻿using Shopping.Application.DTOs.ProductImageDTOs.Responses;
+using Shopping.Application.DTOs.ReviewDTOs.Responses;
 using Shopping.Domain.Enums;
 
 namespace Shopping.Application.DTOs.ProductDTOs.Responses
@@ -22,5 +23,6 @@ namespace Shopping.Application.DTOs.ProductDTOs.Responses
         public WarrantyType Warranty { get; set; }
         public bool IsAvailable { get; set; }
         public List<ProductImageResponseDTO> Images { get; set; } = new();
+        public List<ReviewResponseDTO> Reviews { get; set; } = new();
     }
 }

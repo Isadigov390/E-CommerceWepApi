@@ -62,7 +62,7 @@ namespace Shopping.WebApi.Controllers
             var product = await _productService.GetProductByIdWithImages(id);
             return Ok(product);
         }
-        [Authorize]
+       // [Authorize]
         [HttpGet("{id}/with-all-images")]
         public async Task<IActionResult> GetProductsByIdWithAllImages([FromRoute] int id)
         {
